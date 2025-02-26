@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP Implementation ROI Calculator</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            line-height: 1.5;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1, h2, h3 {
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        h1 {
+            font-size: 1.75rem;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        h3 {
+            font-size: 1.25rem;
+        }
+        
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Card styles */
+        .card {
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Table styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+            background-color: white;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            background-color: #eee;
+            font-weight: 600;
+        }
+        
+        /* Grid layouts */
+        .grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        /* Button styles */
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        /* Dashboard item styles */
+        .dashboard-item {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .dashboard-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 0.25rem;
+        }
+        
+        /* Utilities */
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-green {
+            color: #16a34a;
+        }
+        
+        .text-red {
+            color: #dc2626;
+        }
+
+        .overflow-auto {
+            overflow: auto;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .grid-3, .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ERP Implementation ROI Calculator</h1>
+        
+        <!-- Current Process Analysis Section -->
+        <div class="card">
+            <h2>Current Business Process Analysis</h2>
+            <div class="overflow-auto">
+                <table id="processes-table">
+                    <thead>
+                        <tr>
+                            <th>Process</th>
+                            <th>Weekly Hours</th>
+                            <th># of Employees</th>
+                            <th>Avg. Annual Salary</th>
+                            <th>Expected ERP Savings %</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="processes-body">
+                        <!-- Rows will be added here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <button id="add-process" class="btn-primary">Add Process</button>
+        </div>
+        
+        <!-- Time Values Section -->
+        <div class="card">
+            <h2>Time Parameters</h2>
+            <div class="grid grid-3">
+                <div>
+                    <label for="weeks-per-year">Weeks Worked Per Year</label>
+                    <input type="number" id="weeks-per-year" value="50" min="1" max="52">
+                </div>
+                <div>
+                    <label for="implementation-time">Implementation Time (Months)</label>
+                    <input type="number" id="implementation-time" value="6" min="1" max="24">
+                </div>
+                <div>
+                    <label for="projection-years">Projection Years</label>
+                    <input type="number" id="projection-years" value="5" min="1" max="10">
+                </div>
+            </div>
+        </div>
+        
+        <!-- ERP Costs Section -->
+        <div class="card">
+            <h2>ERP Implementation Costs</h2>
+            <div class="grid grid-3">
+                <div>
+                    <label for="software-license">Software License</label>
+                    <input type="number" id="software-license" value="50000">
+                </div>
+                <div>
+                    <label for="implementation-fee">Implementation Fee</label>
+                    <input type="number" id="implementation-fee" value="30000">
+                </div>
+                <div>
+                    <label for="annual-maintenance">Annual Maintenance</label>
+                    <input type="number" id="annual-maintenance" value="10000">
+                </div>
+                <div>
+                    <label for="training-costs">Training Costs</label>
+                    <input type="number" id="training-costs" value="15000">
+                </div>
+                <div>
+                    <label for="hardware-upgrades">Hardware Upgrades</label>
+                    <input type="number" id="hardware-upgrades" value="20000">
+                </div>
+                <div>
+                    <label for="additional-customization">Additional Customization</label>
+                    <input type="number" id="additional-customization" value="15000">
+                </div>
+            </div>
+        </div>
+        
+        <button id="calculate-roi" class="btn-primary" style="margin-bottom: 1.5rem; padding: 12px 24px; font-size: 1.1rem;">Calculate ROI</button>
+        
+        <!-- Results Section -->
+        <div id="results-section" class="card" style="display: none;">
+            <h2>ERP ROI Analysis Results</h2>
+            
+            <!-- Summary Dashboard -->
+            <div class="grid grid-3" style="margin-bottom: 1.5rem;">
+                <div class="dashboard-item">
+                    <div class="dashboard-label">Current Annual Process Cost</div>
+                    <div id="total-current-cost" class="dashboard-value">$0</div>
+                </div>
+                <div class="dashboard-item">
+                    <div class="dashboard-label">Potential Annual Savings</div>
+                    <div id="total-savings" class="dashboard-value">$0</div>
+                </div>
+                <div class="dashboard-item">
+                    <div class="dashboard-label">Payback Period</div>
+                    <div id="payback-period" class="dashboard-value">0 months</div>
+                </div>
+            </div>
+            
+            <!-- Detailed Process Costs -->
+            <div style="margin-bottom: 1.5rem;">
+                <h3>Current Process Costs Breakdown</h3>
+                <div class="overflow-auto">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Process</th>
+                                <th class="text-right">Hourly Rate</th>
+                                <th class="text-right">Weekly Cost</th>
+                                <th class="text-right">Annual Cost</th>
+                                <th class="text-right">Potential Savings</th>
+                            </tr>
+                        </thead>
+                        <tbody id="process-costs-body">
+                            <!-- Rows will be added here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- ERP Implementation Costs Summary -->
+            <div style="margin-bottom: 1.5rem;">
+                <h3>ERP Implementation Costs</h3>
+                <div class="grid grid-2">
+                    <div class="dashboard-item">
+                        <div class="dashboard-label">Initial Investment</div>
+                        <div id="total-initial-cost" class="dashboard-value">$0</div>
+                        <div id="initial-cost-breakdown" style="margin-top: 0.5rem; font-size: 0.875rem;">
+                            <!-- Breakdown will be added here by JavaScript -->
+                        </div>
+                    </div>
+                    <div class="dashboard-item">
+                        <div class="dashboard-label">Annual Ongoing Costs</div>
+                        <div id="annual-ongoing-cost" class="dashboard-value">$0</div>
+                        <div id="ongoing-cost-breakdown" style="margin-top: 0.5rem; font-size: 0.875rem;">
+                            <!-- Breakdown will be added here by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Yearly Projections -->
+            <div>
+                <h3><span id="projection-years-label">5</span>-Year Projection</h3>
+                <div class="overflow-auto">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th class="text-right">Annual Savings</th>
+                                <th class="text-right">Cumulative Savings</th>
+                                <th class="text-right">Cumulative Costs</th>
+                                <th class="text-right">Net Savings</th>
+                                <th class="text-right">ROI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="yearly-projections-body">
+                            <!-- Rows will be added here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize default processes
+        const defaultProcesses = [
+            { name: 'Accounting/Financial Management', hours: 40, employees: 2, avgSalary: 60000, erpSavingPercent: 30 },
+            { name: 'Inventory Management', hours: 30, employees: 2, avgSalary: 50000, erpSavingPercent: 40 },
+            { name: 'Order Processing', hours: 35, employees: 3, avgSalary: 45000, erpSavingPercent: 50 },
+            { name: 'Procurement', hours: 25, employees: 2, avgSalary: 55000, erpSavingPercent: 35 },
+            { name: 'Reporting & Analytics', hours: 20, employees: 1, avgSalary: 70000, erpSavingPercent: 60 }
+        ];
+        
+        let processes = [...defaultProcesses];
+        
+        // DOM elements
+        const processesTableBody = document.getElementById('processes-body');
+        const addProcessButton = document.getElementById('add-process');
+        const calculateRoiButton = document.getElementById('calculate-roi');
+        const resultsSection = document.getElementById('results-section');
+        const processCostsBody = document.getElementById('process-costs-body');
+        const yearlyProjectionsBody = document.getElementById('yearly-projections-body');
+        
+        // Format currency function
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+        
+        // Render processes table
+        function renderProcessesTable() {
+            processesTableBody.innerHTML = '';
+            
+            processes.forEach((process, index) => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>
+                        <input type="text" value="${process.name}" 
+                            onchange="updateProcess(${index}, 'name', this.value)">
+                    </td>
+                    <td>
+                        <input type="number" value="${process.hours}" min="0" 
+                            onchange="updateProcess(${index}, 'hours', parseInt(this.value) || 0)">
+                    </td>
+                    <td>
+                        <input type="number" value="${process.employees}" min="1" 
+                            onchange="updateProcess(${index}, 'employees', parseInt(this.value) || 0)">
+                    </td>
+                    <td>
+                        <input type="number" value="${process.avgSalary}" min="0" 
+                            onchange="updateProcess(${index}, 'avgSalary', parseInt(this.value) || 0)">
+                    </td>
+                    <td>
+                        <input type="number" value="${process.erpSavingPercent}" min="0" max="100" 
+                            onchange="updateProcess(${index}, 'erpSavingPercent', parseInt(this.value) || 0)">
+                    </td>
+                    <td>
+                        <button class="btn-danger" onclick="removeProcess(${index})">Remove</button>
+                    </td>
+                `;
+                
+                processesTableBody.appendChild(row);
+            });
+        }
+        
+        // Update process data
+        function updateProcess(index, field, value) {
+            processes[index][field] = value;
+        }
+        
+        // Add a new process
+        function addProcess() {
+            processes.push({ 
+                name: '', 
+                hours: 0, 
+                employees: 1, 
+                avgSalary: 50000, 
+                erpSavingPercent: 30 
+            });
+            renderProcessesTable();
+        }
+        
+        // Remove a process
+        function removeProcess(index) {
+            processes.splice(index, 1);
+            renderProcessesTable();
+        }
+        
+        // Calculate hourly rate based on annual salary
+        function calculateHourlyRate(salary, weeksPerYear) {
+            return salary / (weeksPerYear * 40);
+        }
+        
+        // Calculate ROI
+        function calculateROI() {
+            // Get time values
+            const weeksPerYear = parseInt(document.getElementById('weeks-per-year').value) || 50;
+            const implementationTimeMonths = parseInt(document.getElementById('implementation-time').value) || 6;
+            const projectionYears = parseInt(document.getElementById('projection-years').value) || 5;
+            
+            // Update the projection years label
+            document.getElementById('projection-years-label').textContent = projectionYears;
+            
+            // Get ERP costs
+            const erpCosts = {
+                softwareLicense: parseInt(document.getElementById('software-license').value) || 0,
+                implementationFee: parseInt(document.getElementById('implementation-fee').value) || 0,
+                annualMaintenance: parseInt(document.getElementById('annual-maintenance').value) || 0,
+                trainingCosts: parseInt(document.getElementById('training-costs').value) || 0,
+                hardwareUpgrades: parseInt(document.getElementById('hardware-upgrades').value) || 0,
+                additionalCustomization: parseInt(document.getElementById('additional-customization').value) || 0
+            };
+            
+            // Calculate current process costs
+            const currentCosts = processes.map(process => {
+                const hourlyRate = calculateHourlyRate(process.avgSalary, weeksPerYear);
+                const weeklyCost = process.hours * hourlyRate * process.employees;
+                const annualCost = weeklyCost * weeksPerYear;
+                return {
+                    ...process,
+                    hourlyRate,
+                    weeklyCost,
+                    annualCost
+                };
+            });
+            
+            const totalCurrentAnnualCost = currentCosts.reduce(
+                (sum, process) => sum + process.annualCost, 0
+            );
+            
+            const totalSavingsAnnual = currentCosts.reduce(
+                (sum, process) => sum + (process.annualCost * process.erpSavingPercent / 100), 0
+            );
+            
+            const totalInitialCost = 
+                erpCosts.softwareLicense + 
+                erpCosts.implementationFee + 
+                erpCosts.trainingCosts + 
+                erpCosts.hardwareUpgrades + 
+                erpCosts.additionalCustomization;
+            
+            const annualOngoingCost = erpCosts.annualMaintenance;
+            
+            // Calculate payback period in months
+            const monthlySavings = (totalSavingsAnnual - annualOngoingCost) / 12;
+            const paybackPeriod = totalInitialCost / monthlySavings;
+            
+            // Calculate yearly projections
+            const yearlyProjections = [];
+            let cumulativeSavings = 0;
+            let cumulativeCosts = totalInitialCost;
+            
+            for (let year = 1; year <= projectionYears; year++) {
+                // For first year, account for implementation time
+                const firstYearFactor = year === 1 
+                    ? (12 - implementationTimeMonths) / 12 
+                    : 1;
+                
+                const yearSavings = totalSavingsAnnual * firstYearFactor;
+                cumulativeSavings += yearSavings;
+                
+                if (year > 1) {
+                    cumulativeCosts += annualOngoingCost;
+                }
+                
+                const netSavings = cumulativeSavings - cumulativeCosts;
+                const roi = (netSavings / cumulativeCosts) * 100;
+                
+                yearlyProjections.push({
+                    year,
+                    yearSavings,
+                    cumulativeSavings,
+                    cumulativeCosts,
+                    netSavings,
+                    roi
+                });
+            }
+            
+            // Update results in the UI
+            document.getElementById('total-current-cost').textContent = formatCurrency(totalCurrentAnnualCost);
+            document.getElementById('total-savings').textContent = formatCurrency(totalSavingsAnnual);
+            document.getElementById('payback-period').textContent = paybackPeriod.toFixed(1) + ' months';
+            
+            // Render process costs breakdown
+            processCostsBody.innerHTML = '';
+            
+            currentCosts.forEach(process => {
+                const row = document.createElement('tr');
+                const potentialSavings = process.annualCost * process.erpSavingPercent / 100;
+                
+                row.innerHTML = `
+                    <td>${process.name}</td>
+                    <td class="text-right">${formatCurrency(process.hourlyRate)}</td>
+                    <td class="text-right">${formatCurrency(process.weeklyCost)}</td>
+                    <td class="text-right">${formatCurrency(process.annualCost)}</td>
+                    <td class="text-right">${formatCurrency(potentialSavings)}</td>
+                `;
+                
+                processCostsBody.appendChild(row);
+            });
+            
+            // Add total row
+            const totalRow = document.createElement('tr');
+            totalRow.style.fontWeight = 'bold';
+            totalRow.style.backgroundColor = '#f5f5f5';
+            
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td></td>
+                <td></td>
+                <td class="text-right">${formatCurrency(totalCurrentAnnualCost)}</td>
+                <td class="text-right">${formatCurrency(totalSavingsAnnual)}</td>
+            `;
+            
+            processCostsBody.appendChild(totalRow);
+            
+            // Update ERP costs summary
+            document.getElementById('total-initial-cost').textContent = formatCurrency(totalInitialCost);
+            document.getElementById('annual-ongoing-cost').textContent = formatCurrency(annualOngoingCost);
+            
+            document.getElementById('initial-cost-breakdown').innerHTML = `
+                <div>Software License: ${formatCurrency(erpCosts.softwareLicense)}</div>
+                <div>Implementation: ${formatCurrency(erpCosts.implementationFee)}</div>
+                <div>Training: ${formatCurrency(erpCosts.trainingCosts)}</div>
+                <div>Hardware: ${formatCurrency(erpCosts.hardwareUpgrades)}</div>
+                <div>Customization: ${formatCurrency(erpCosts.additionalCustomization)}</div>
+            `;
+            
+            document.getElementById('ongoing-cost-breakdown').innerHTML = `
+                <div>Maintenance: ${formatCurrency(erpCosts.annualMaintenance)}</div>
+            `;
+            
+            // Render yearly projections
+            yearlyProjectionsBody.innerHTML = '';
+            
+            yearlyProjections.forEach(year => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>Year ${year.year}</td>
+                    <td class="text-right">${formatCurrency(year.yearSavings)}</td>
+                    <td class="text-right">${formatCurrency(year.cumulativeSavings)}</td>
+                    <td class="text-right">${formatCurrency(year.cumulativeCosts)}</td>
+                    <td class="text-right ${year.netSavings >= 0 ? 'text-green' : 'text-red'}">
+                        ${formatCurrency(year.netSavings)}
+                    </td>
+                    <td class="text-right ${year.roi >= 0 ? 'text-green' : 'text-red'}">
+                        ${year.roi.toFixed(1)}%
+                    </td>
+                `;
+                
+                yearlyProjectionsBody.appendChild(row);
+            });
+            
+            // Show results section
+            resultsSection.style.display = 'block';
+        }
+        
+        // Event listeners
+        addProcessButton.addEventListener('click', addProcess);
+        calculateRoiButton.addEventListener('click', calculateROI);
+        
+        // Initialize the processes table
+        renderProcessesTable();
+        
+        // Global functions that need to be accessible from inline handlers
+        window.updateProcess = updateProcess;
+        window.removeProcess = removeProcess;
+    </script>
+</body>
+</html>
