@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ERP Implementation ROI Calculator</title>
+    <!-- Add jsPDF library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* Reset and base styles */
         * {
@@ -117,6 +120,11 @@
             background-color: #ef4444;
             color: white;
         }
+
+        .btn-success {
+            background-color: #10b981;
+            color: white;
+        }
         
         /* Dashboard item styles */
         .dashboard-item {
@@ -157,11 +165,41 @@
         .overflow-auto {
             overflow: auto;
         }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
         
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .grid-3, .grid-2 {
                 grid-template-columns: 1fr;
+            }
+            .button-container {
+                flex-direction: column;
+            }
+        }
+
+        /* PDF Export specific styles */
+        @media print {
+            body {
+                background-color: white;
+            }
+            .no-print {
+                display: none;
+            }
+            .container {
+                padding: 0;
+            }
+            .card {
+                box-shadow: none;
+                margin-bottom: 20px;
+                page-break-inside: avoid;
+            }
+            table {
+                page-break-inside: avoid;
             }
         }
     </style>
@@ -171,7 +209,7 @@
         <h1>ERP Implementation ROI Calculator</h1>
         
         <!-- Current Process Analysis Section -->
-        <div class="card">
+        <div class="card no-print">
             <h2>Current Business Process Analysis</h2>
             <div class="overflow-auto">
                 <table id="processes-table">
@@ -194,7 +232,7 @@
         </div>
         
         <!-- Time Values Section -->
-        <div class="card">
+        <div class="card no-print">
             <h2>Time Parameters</h2>
             <div class="grid grid-3">
                 <div>
@@ -213,7 +251,7 @@
         </div>
         
         <!-- ERP Costs Section -->
-        <div class="card">
+        <div class="card no-print">
             <h2>ERP Implementation Costs</h2>
             <div class="grid grid-3">
                 <div>
@@ -243,7 +281,10 @@
             </div>
         </div>
         
-        <button id="calculate-roi" class="btn-primary" style="margin-bottom: 1.5rem; padding: 12px 24px; font-size: 1.1rem;">Calculate ROI</button>
+        <div class="button-container no-print">
+            <button id="calculate-roi" class="btn-primary" style="padding: 12px 24px; font-size: 1.1rem;">Calculate ROI</button>
+            <button id="download-pdf" class="btn-success" style="padding: 12px 24px; font-size: 1.1rem; display: none;">Download as PDF</button>
+        </div>
         
         <!-- Results Section -->
         <div id="results-section" class="card" style="display: none;">
@@ -347,6 +388,7 @@
         const processesTableBody = document.getElementById('processes-body');
         const addProcessButton = document.getElementById('add-process');
         const calculateRoiButton = document.getElementById('calculate-roi');
+        const downloadPdfButton = document.getElementById('download-pdf');
         const resultsSection = document.getElementById('results-section');
         const processCostsBody = document.getElementById('process-costs-body');
         const yearlyProjectionsBody = document.getElementById('yearly-projections-body');
@@ -587,20 +629,103 @@
                 yearlyProjectionsBody.appendChild(row);
             });
             
-            // Show results section
+            // Show results section and PDF download button
             resultsSection.style.display = 'block';
+            downloadPdfButton.style.display = 'block';
+        }
+
+        // Generate and download PDF
+        function generatePDF() {
+            // Show loading state
+            downloadPdfButton.textContent = 'Generating PDF...';
+            downloadPdfButton.disabled = true;
+            
+            // Get today's date for filename
+            const today = new Date();
+            const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+            
+            // Get only the results section
+            const resultsSection = document.getElementById('results-section');
+
+            // Use html2canvas to capture the results section
+            html2canvas(resultsSection, {
+                scale: 2, // Higher scale for better quality
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            }).then(canvas => {
+                // Initialize jsPDF
+                const { jsPDF } = window.jspdf;
+                
+                // Create PDF with A4 dimensions (210mm x 297mm)
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                // Add title
+                pdf.setFontSize(18);
+                pdf.text('ERP Implementation ROI Analysis', 15, 15);
+                
+                // Add date
+                pdf.setFontSize(10);
+                pdf.text(`Generated on ${today.toLocaleDateString()}`, 15, 22);
+                
+                // Get dimensions
+                const imgWidth = 180; // Max width on A4 with margins
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                
+                // Calculate number of pages needed
+                const pageHeight = 270; // A4 height with margins
+                let heightLeft = imgHeight;
+                let position = 30; // Starting position after title and date
+                let page = 1;
+                
+                // Add first page image
+                pdf.addImage(canvas, 'PNG', 15, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight - position;
+                
+                // Add new pages if content overflows
+                while (heightLeft > 0) {
+                    position = 15; // Reset position for new pages
+                    pdf.addPage();
+                    page++;
+                    pdf.addImage(canvas, 'PNG', 15, position - (pageHeight * (page - 1) - 30), imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                // Add page numbers
+                for (let i = 1; i <= page; i++) {
+                    pdf.setPage(i);
+                    pdf.setFontSize(8);
+                    pdf.text(`Page ${i} of ${page}`, 180, 287, { align: 'right' });
+                }
+                
+                // Save the PDF
+                pdf.save(`ERP_ROI_Analysis_${dateString}.pdf`);
+                
+                // Reset button state
+                downloadPdfButton.textContent = 'Download as PDF';
+                downloadPdfButton.disabled = false;
+            });
         }
         
-        // Event listeners
-        addProcessButton.addEventListener('click', addProcess);
-        calculateRoiButton.addEventListener('click', calculateROI);
-        
-        // Initialize the processes table
-        renderProcessesTable();
-        
-        // Global functions that need to be accessible from inline handlers
-        window.updateProcess = updateProcess;
-        window.removeProcess = removeProcess;
+        // Add event listeners after document is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if required libraries are loaded
+            if (typeof window.jspdf === 'undefined' || typeof html2canvas === 'undefined') {
+                console.error("PDF libraries not loaded properly. PDF export may not work.");
+            }
+            
+            // Add event listeners
+            addProcessButton.addEventListener('click', addProcess);
+            calculateRoiButton.addEventListener('click', calculateROI);
+            downloadPdfButton.addEventListener('click', generatePDF);
+            
+            // Initialize the processes table
+            renderProcessesTable();
+            
+            // Make global functions accessible
+            window.updateProcess = updateProcess;
+            window.removeProcess = removeProcess;
+        });
     </script>
 </body>
 </html>
